@@ -1,0 +1,13 @@
+version: '3.3'
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: "password1234"
+    volumes:
+      - "./sql/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql"
+      - "./docker-compose-mysql.cnf:/etc/mysql/conf.d/mysql.cnf"
+    ports:
+      - 3309:3306
+    container_name: spring-data-jpa
