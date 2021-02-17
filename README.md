@@ -9,3 +9,5 @@
   $ cd  %PROJECT_DIRECTORY%/src/docker
   $ docker-compose up
   ```
+
+#### running spring-boot
