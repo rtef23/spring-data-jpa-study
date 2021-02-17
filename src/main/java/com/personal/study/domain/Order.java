@@ -21,7 +21,7 @@ import javax.persistence.Table;
 import lombok.Getter;
 
 @Entity
-@Table(name = "Orders")
+@Table(name = "ORDERS")
 @Getter
 public class Order {
   @Id

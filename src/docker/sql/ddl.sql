@@ -8,7 +8,7 @@ grant all privileges on jpa_shop.* to 'shop_server'@'%';
 
 use jpa_shop;
 
-create table Member(
+create table MEMBER(
   member_id bigint auto_increment,
   name varchar(30),
   city varchar(30),
@@ -18,7 +18,7 @@ create table Member(
   primary key(member_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table Orders(
+create table ORDERS(
   order_id bigint auto_increment,
   member_id bigint,
   delivery_id bigint,
@@ -28,7 +28,7 @@ create table Orders(
   primary key(order_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table Delivery(
+create table DELIVERY(
   delivery_id bigint auto_increment,
   status varchar(20),
   city varchar(30),
@@ -38,7 +38,7 @@ create table Delivery(
   primary key(delivery_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table Order_Item(
+create table ORDER_ITEM(
   order_item_id bigint auto_increment,
   order_id bigint,
   item_id bigint,
@@ -48,7 +48,7 @@ create table Order_Item(
   primary key(order_item_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table Item(
+create table ITEM(
   item_id bigint auto_increment,
   name varchar(100),
   price bigint,
@@ -67,14 +67,14 @@ create table Item(
   primary key(item_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table Category_Item(
+create table CATEGORY_ITEM(
   category_id bigint,
   item_id bigint,
 
   primary key(category_id, item_id)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-create table Category(
+create table CATEGORY(
   category_id bigint auto_increment,
   parent_id bigint,
   name varchar(100),
