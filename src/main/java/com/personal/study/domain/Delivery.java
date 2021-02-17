@@ -16,7 +16,7 @@ import javax.persistence.OneToOne;
 @Entity
 public class Delivery {
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "delivery_id")
   private Long id;
 
@@ -26,7 +26,7 @@ public class Delivery {
   @Embedded private Address address;
 
   @Enumerated(value = EnumType.STRING)
-  private DeliveryStatus deliveryStatus;
+  private DeliveryStatus status;
 
   protected void setOrder(Order order) {
     this.order = order;

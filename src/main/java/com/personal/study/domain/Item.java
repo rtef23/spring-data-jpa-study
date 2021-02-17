@@ -17,7 +17,7 @@ import javax.persistence.ManyToMany;
 @DiscriminatorColumn(name = "item_type")
 public abstract class Item {
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "item_id")
   private Long id;
 
@@ -25,6 +25,7 @@ public abstract class Item {
 
   private Long price;
 
+  @Column(name = "stockquantity")
   private Integer stockQuantity;
 
   @ManyToMany(mappedBy = "items")

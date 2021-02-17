@@ -19,7 +19,7 @@ import lombok.Getter;
 @Getter
 public class Category {
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "category_id")
   private Long id;
 

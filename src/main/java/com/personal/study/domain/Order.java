@@ -25,7 +25,7 @@ import lombok.Getter;
 @Getter
 public class Order {
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "order_id")
   private Long id;
 
@@ -36,6 +36,7 @@ public class Order {
   @JoinColumn(name = "delivery_id")
   private Delivery delivery;
 
+  @Column(name = "orderdate")
   private LocalDateTime orderDate;
 
   @Enumerated(value = EnumType.STRING)

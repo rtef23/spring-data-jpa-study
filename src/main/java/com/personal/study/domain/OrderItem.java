@@ -16,7 +16,7 @@ import lombok.Getter;
 @Getter
 public class OrderItem {
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "order_item_id")
   private Long id;
 
@@ -28,6 +28,7 @@ public class OrderItem {
   @JoinColumn(name = "order_id")
   private Order order;
 
+  @Column(name = "orderprice")
   private Long orderPrice;
 
   private Integer count;

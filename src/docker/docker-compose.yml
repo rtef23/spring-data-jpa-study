@@ -6,8 +6,18 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: "password1234"
     volumes:
-      - "./sql/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql"
-      - "./docker-compose-mysql.cnf:/etc/mysql/conf.d/mysql.cnf"
+      - "./mysql/scripts/ddl.sql:/docker-entrypoint-initdb.d/ddl.sql"
+      - "./mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf"
     ports:
       - 3309:3306
-    container_name: spring-data-jpa
+    container_name: database
+
+  nginx:
+    image: nginx:1.19.6
+    volumes:
+      - "./nginx/static:/usr/share/nginx/html"
+      - "./nginx/conf/nginx.conf:/etc/nginx/nginx.conf"
+      - "./nginx/conf/default.conf:/etc/nginx/conf.d/default.conf"
+    ports:
+      - 3000:80
+    container_name: web-server
