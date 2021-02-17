@@ -12,7 +12,7 @@ import javax.persistence.Table;
 import lombok.Getter;
 
 @Entity
-@Table(name = "Order_Item")
+@Table(name = "ORDER_ITEM")
 @Getter
 public class OrderItem {
   @Id
