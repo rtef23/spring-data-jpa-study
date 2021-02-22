@@ -12,8 +12,8 @@ public class JpaConfig {
   public SpringPhysicalNamingStrategy namingStrategy() {
     return new SpringPhysicalNamingStrategy() {
       @Override
-      protected Identifier getIdentifier(String name, boolean quoted,
-          JdbcEnvironment jdbcEnvironment) {
+      protected Identifier getIdentifier(
+          String name, boolean quoted, JdbcEnvironment jdbcEnvironment) {
         return new Identifier(name.toUpperCase(), quoted);
       }
     };
