@@ -3,7 +3,7 @@ const {
   Container, Tabs, Tab, Box, Typography,
   Grid, TextField, Button, TableContainer, Table,
   TableHead, TableBody, TableRow, TableCell, Paper,
-  Alert, Snackbar
+  Snackbar, IconButton
 } = MaterialUI;
 
 //======== constants
@@ -80,7 +80,7 @@ const SnackbarProvider = ({children}) => {
   const [snackbarProperties, setSnackbarProperties] = React.useState(INIT_SNACKBAR_PROPERTIES);
 
   const actions = {
-    showSnackbar: (type, message) => {
+    showSnackbar: ({type, message}) => {
       setSnackbarProperties({
         ...snackbarProperties,
 
@@ -89,6 +89,7 @@ const SnackbarProvider = ({children}) => {
         type
       });
     },
+
     hideSnackbar: () => {
       setSnackbarProperties({
         ...INIT_SNACKBAR_PROPERTIES,
@@ -100,18 +101,20 @@ const SnackbarProvider = ({children}) => {
     <SnackbarContext.Provider value={{ actions }}>
       {children}
 
-      <Snackbar open={snackbarProperties.show} autoHideDuration={3000} onClose={actions.hideSnackbar}>
-        <Alert severity={snackbarProperties.type}>{snackbarProperties.message}</Alert>
-      </Snackbar>
+      <Snackbar open={snackbarProperties.show} autoHideDuration={3000} onClose={actions.hideSnackbar} message={snackbarProperties.message} action={
+        <React.Fragment>
+          <IconButton size="small" aria-label="close" color="inherit" onClick={actions.hideSnackbar}>
+            X
+          </IconButton>
+        </React.Fragment>
+      } />
     </SnackbarContext.Provider>
   );
 };
 
 const INIT_MEMBER_SEARCH_CONDITION = {
-  pagination: {
-    startRow: 0,
-    offset: 10
-  }
+  page: 1,
+  size: 10
 };
 
 const MemberListContext = React.createContext();
@@ -119,6 +122,7 @@ const MemberListContext = React.createContext();
 const MemberListProvider = ({children}) => {
   const [ searchCondition, changeSearchCondition ] = React.useState(INIT_MEMBER_SEARCH_CONDITION);
   const [ members, setMembers ] = React.useState([]);
+
   const actions = {
     changeSearchCondition
   };
@@ -128,8 +132,9 @@ const MemberListProvider = ({children}) => {
       .getMembers(searchCondition)
       .then((apiResponse) => {
         const { data } = apiResponse;
+        const { content } = data;
 
-        setMembers(data);
+        setMembers(content);
       });
   }, [searchCondition]);
 

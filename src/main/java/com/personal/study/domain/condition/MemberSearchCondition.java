@@ -5,6 +5,4 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class MemberSearchCondition {
-  private Pagination pagination;
-}
+public class MemberSearchCondition {}
