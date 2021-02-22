@@ -3,7 +3,7 @@ const {
   Container, Tabs, Tab, Box, Typography,
   Grid, TextField, Button, TableContainer, Table,
   TableHead, TableBody, TableRow, TableCell, Paper,
-  Snackbar, IconButton
+  Snackbar, IconButton, Select, MenuItem
 } = MaterialUI;
 
 //======== constants
@@ -51,7 +51,10 @@ const MemberApi = {
   getMembers: (searchCondition) => {
     return _axios.get('/api/v1/members', {
       params: {
-        ...searchCondition
+        ...searchCondition,
+
+        keywordType: !!searchCondition.keyword ? searchCondition.keywordType : undefined,
+        keyword: !!searchCondition.keyword ? searchCondition.keyword : undefined
       }
     });
   },
@@ -112,7 +115,14 @@ const SnackbarProvider = ({children}) => {
   );
 };
 
+const MEMBER_SEARCH_TYPE = {
+  NAME: 'NAME',
+  ADDRESS: 'ADDRESS'
+};
+
 const INIT_MEMBER_SEARCH_CONDITION = {
+  keywordType: MEMBER_SEARCH_TYPE.NAME,
+  keyword: undefined,
   page: 1,
   size: 10
 };
@@ -265,19 +275,11 @@ const MemberListTabPanel = () => {
         <Grid item xs={12}>
           <TableContainer component={Paper}>
             <Table style={{minWidth: '700px'}}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>
-                    No.
-                  </TableCell>
-                  <TableCell>
-                    이름
-                  </TableCell>
-                  <TableCell>
-                    주소
-                  </TableCell>
-                </TableRow>
-              </TableHead>
+              <MemberListContext.Consumer>
+                {({searchCondition, actions}) => (
+                  <MemberListTableHead searchCondition={searchCondition} onChangeSearchCondition={actions.changeSearchCondition} />
+                )}
+              </MemberListContext.Consumer>
 
               <MemberListTableBody />
             </Table>
@@ -287,6 +289,68 @@ const MemberListTabPanel = () => {
     </MemberListProvider>
   );
 }
+
+const MemberListTableHead = ({searchCondition, onChangeSearchCondition}) => {
+  const [ properties, setProperties ] = React.useState({
+    keywordType: searchCondition.keywordType
+  });
+
+  const keywordRef = React.createRef();
+
+  const handleChangeKeywordType = ({target}) => {
+    const { value } = target;
+
+    setProperties({
+      ...properties,
+
+      keywordType: value
+    });
+  };
+
+  const handleClickSearchButton = () => {
+    onChangeSearchCondition({
+      ...INIT_MEMBER_SEARCH_CONDITION,
+
+      keywordType: properties.keywordType,
+      keyword: keywordRef.current.value
+    });
+  }
+
+  return (
+    <TableHead>
+      <TableRow>
+        <TableCell colSpan={3}>
+          <div style={{alignItems: 'flex-end', justifyContent: 'flex-end'}}>
+            <Select value={properties.keywordType} onChange={handleChangeKeywordType}>
+              <MenuItem value={MEMBER_SEARCH_TYPE.NAME}>
+                이름
+              </MenuItem>
+              <MenuItem value={MEMBER_SEARCH_TYPE.ADDRESS}>
+                주소
+              </MenuItem>
+            </Select>
+
+            <TextField inputRef={keywordRef} />
+
+            <Button variant={'contained'} color={'primary'} size={'small'} onClick={handleClickSearchButton}>검색</Button>
+          </div>
+        </TableCell>
+      </TableRow>
+
+      <TableRow>
+        <TableCell>
+          No.
+        </TableCell>
+        <TableCell>
+          이름
+        </TableCell>
+        <TableCell>
+          주소
+        </TableCell>
+      </TableRow>
+    </TableHead>
+  );
+};
 
 const MemberListTableBody = () => {
   return (
