@@ -1,5 +1,6 @@
 package com.personal.study.domain;
 
+import com.personal.study.util.annotation.ExcludeMerge;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
@@ -19,14 +20,15 @@ public abstract class Item {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "item_id")
-  private Long id;
+  @ExcludeMerge
+  protected Long id;
 
-  private String name;
+  protected String name;
 
-  private Long price;
+  protected Long price;
 
   @Column(name = "stockquantity")
-  private Integer stockQuantity;
+  protected Integer stockQuantity;
 
   @ManyToMany(mappedBy = "items")
   private List<Category> categories = new ArrayList<>();

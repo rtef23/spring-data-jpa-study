@@ -1,5 +1,6 @@
 package com.personal.study.infrastructure;
 
+import com.personal.study.application.exception.ResourceNotExistException;
 import com.personal.study.domain.Member;
 import com.personal.study.domain.condition.MemberSearchCondition;
 import com.personal.study.domain.constant.MemberSearchType;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 public class MemberCustomRepositoryImpl implements MemberCustomRepository {
@@ -21,6 +23,7 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
   TODO change with QueryDSL
    */
   @Override
+  @Transactional(readOnly = true)
   public Page<Member> findPagedMembers(MemberSearchCondition searchCondition, Pageable pageable) {
     StringBuilder conditionalCountQuery = new StringBuilder("SELECT COUNT(m) FROM Member m");
     StringBuilder conditionalSelectQuery = new StringBuilder("SELECT m FROM Member m");
@@ -59,5 +62,33 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
         totalMemberCount > 0 ? selectQuery.getResultList() : Collections.emptyList();
 
     return new PageImpl<>(pagedMembers, pageable, totalMemberCount);
+  }
+
+  @Override
+  @Transactional
+  public Member modifyMember(Long id, Member updateValue) {
+    Member targetMember = findManagedMemberEntity(id);
+
+    targetMember.merge(updateValue);
+
+    return targetMember;
+  }
+
+  @Override
+  @Transactional
+  public void removeMember(Long id) {
+    Member targetMember = findManagedMemberEntity(id);
+
+    entityManager.remove(targetMember);
+  }
+
+  private Member findManagedMemberEntity(Long id) {
+    Member foundMember = entityManager.find(Member.class, id);
+
+    if (Objects.isNull(foundMember)) {
+      throw new ResourceNotExistException("member not founded.");
+    }
+
+    return foundMember;
   }
 }

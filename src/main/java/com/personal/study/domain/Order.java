@@ -1,6 +1,8 @@
 package com.personal.study.domain;
 
 import com.personal.study.domain.constant.OrderStatus;
+import com.personal.study.util.Mergeable;
+import com.personal.study.util.annotation.ExcludeMerge;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +25,11 @@ import lombok.Getter;
 @Entity
 @Table(name = "ORDERS")
 @Getter
-public class Order {
+public class Order implements Mergeable<Order> {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "order_id")
+  @ExcludeMerge
   private Long id;
 
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)

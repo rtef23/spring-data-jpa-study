@@ -7,4 +7,8 @@ import org.springframework.data.domain.Pageable;
 
 public interface MemberCustomRepository {
   Page<Member> findPagedMembers(MemberSearchCondition searchCondition, Pageable pageable);
+
+  Member modifyMember(Long id, Member updateValue);
+
+  void removeMember(Long id);
 }

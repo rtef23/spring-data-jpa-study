@@ -1,5 +1,7 @@
 package com.personal.study.domain;
 
+import com.personal.study.util.Mergeable;
+import com.personal.study.util.annotation.ExcludeMerge;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
@@ -17,10 +19,11 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class Category {
+public class Category implements Mergeable<Category> {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "category_id")
+  @ExcludeMerge
   private Long id;
 
   private String name;

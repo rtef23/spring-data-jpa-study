@@ -38,6 +38,12 @@ const TABS = {
   },
 };
 
+const ITEM_TYPE = {
+  ALBUM: 'ALBUM',
+  BOOK: 'BOOK',
+  MOVIE: 'MOVIE',
+};
+
 //======== api
 const _axios = axios.create({
   paramsSerializer: (params) => {
@@ -62,6 +68,14 @@ const MemberApi = {
     return _axios.post('/api/v1/members', {
       ...member
     });
+  },
+  updateMember: (id, updateValue) => {
+    return _axios.patch(`/api/v1/members/${id}`, {
+      ...updateValue
+    });
+  },
+  removeMember: (id) => {
+    return _axios.delete(`/api/v1/members/${id}`);
   }
 };
 
@@ -133,8 +147,32 @@ const MemberListProvider = ({children}) => {
   const [ searchCondition, changeSearchCondition ] = React.useState(INIT_MEMBER_SEARCH_CONDITION);
   const [ members, setMembers ] = React.useState([]);
 
+  const modifyMember = (id, updateValue) => {
+    return MemberApi.updateMember(id, updateValue)
+      .then(() => MemberApi.getMembers(searchCondition))
+      .then((apiResponse) => {
+        const { data } = apiResponse;
+        const { content } = data;
+
+        setMembers(content);
+      });
+  };
+
+  const removeMember = (id) => {
+    return MemberApi.removeMember(id)
+      .then(() => MemberApi.getMembers(searchCondition))
+      .then((apiResponse) => {
+        const { data } = apiResponse;
+        const { content } = data;
+
+        setMembers(content);
+      });
+  }
+
   const actions = {
-    changeSearchCondition
+    changeSearchCondition,
+    modifyMember,
+    removeMember
   };
 
   React.useEffect(() => {
@@ -237,14 +275,14 @@ const MemberJoinTabPanel = () => {
           <Grid item xs={8} style={{alignItems: 'flex-start'}}>
             <Grid container spacing={1}>
               <Grid item xs={4}>
-                <TextField label="도시" inputRef={cityRef} />
+                <TextField label={"도시"} inputRef={cityRef} />
               </Grid>
               <Grid item xs={6}>
-                <TextField label="상세 주소" inputRef={streetRef} fullWidth />
+                <TextField label={"상세 주소"} inputRef={streetRef} fullWidth />
               </Grid>
 
               <Grid item xs={12}>
-                <TextField label="우편 번호" inputRef={zipcodeRef} />
+                <TextField label={"우편 번호"} inputRef={zipcodeRef} />
               </Grid>
             </Grid>
           </Grid>
@@ -319,7 +357,7 @@ const MemberListTableHead = ({searchCondition, onChangeSearchCondition}) => {
   return (
     <TableHead>
       <TableRow>
-        <TableCell colSpan={3}>
+        <TableCell colSpan={4}>
           <div style={{alignItems: 'flex-end', justifyContent: 'flex-end'}}>
             <Select value={properties.keywordType} onChange={handleChangeKeywordType}>
               <MenuItem value={MEMBER_SEARCH_TYPE.NAME}>
@@ -341,12 +379,13 @@ const MemberListTableHead = ({searchCondition, onChangeSearchCondition}) => {
         <TableCell>
           No.
         </TableCell>
-        <TableCell>
+        <TableCell style={{width: '200px'}}>
           이름
         </TableCell>
-        <TableCell>
+        <TableCell style={{width: '450px'}}>
           주소
         </TableCell>
+        <TableCell />
       </TableRow>
     </TableHead>
   );
@@ -359,23 +398,18 @@ const MemberListTableBody = () => {
         <TableBody>
           {!members.length && (
             <TableRow>
-              <TableCell colSpan={3}>
+              <TableCell colSpan={4}>
                 검색된 회원 목록이 없습니다.
               </TableCell>
             </TableRow>
           )}
-          {members.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                {index + 1}
-              </TableCell>
-              <TableCell>
-                {row.name}
-              </TableCell>
-              <TableCell>
-                {`${row.addressCity} ((우) ${row.addressZipcode}) ${row.addressStreet}`}
-              </TableCell>
-            </TableRow>
+          {members.map((member, index) => (
+            <MemberRow
+              key={index}
+              index={index}
+              member={member}
+              onChangeMember={actions.modifyMember}
+              onRemoveMember={actions.removeMember} />
           ))}
         </TableBody>
       )}
@@ -383,11 +417,298 @@ const MemberListTableBody = () => {
   );
 }
 
-const ProductEnrollTabPanel = () => {
+const MEMBER_ROW_TYPE = {
+  VIEW: 'VIEW',
+  EDIT: 'EDIT'
+};
+
+const INIT_MEMBER_ROW_PROPERTIES = {
+  type: MEMBER_ROW_TYPE.VIEW
+};
+
+const MemberRow = ({ member, index, onChangeMember, onRemoveMember }) => {
+  const [properties, setProperties] = React.useState(INIT_MEMBER_ROW_PROPERTIES);
+  const [memberData, setMemberData] = React.useState(member)
+
+  const handleClickEditButton = () => {
+    setProperties({
+      ...properties,
+
+      type: MEMBER_ROW_TYPE.EDIT
+    });
+  };
+
+  const handleClickCancelButton = () => {
+    setProperties({
+      ...properties,
+
+      type: MEMBER_ROW_TYPE.VIEW
+    });
+  };
+
+  const handleChangeMemberData = (key, updateValue) => {
+    setMemberData({
+      ...memberData,
+
+      [key]: updateValue
+    });
+  };
+
+  const handleClickUpdateButton = () => {
+    const { id } = member;
+
+    onChangeMember(id, memberData)
+      .then(() => {
+        setProperties(INIT_MEMBER_ROW_PROPERTIES);
+      });
+  };
+
+  const handleClickRemoveButton = () => {
+    const { id } = member;
+
+    onRemoveMember(id);
+  };
+
   return (
-    <div>
-      this is ProductEnrollTabPanel
-    </div>
+    <React.Fragment>
+      {properties.type === MEMBER_ROW_TYPE.VIEW && (
+          <TableRow>
+            <TableCell>
+              {index + 1}
+            </TableCell>
+            <TableCell>
+              {member.name}
+            </TableCell>
+            <TableCell>
+              {`${member.addressCity} ((우) ${member.addressZipcode}) ${member.addressStreet}`}
+            </TableCell>
+            <TableCell>
+              <Button variant={'contained'} color={'primary'} size={'small'} onClick={handleClickEditButton}>수정</Button>
+              <Button variant={'contained'} color={'secondary'} size={'small'} onClick={handleClickRemoveButton}>삭제</Button>
+            </TableCell>
+          </TableRow>
+      )}
+
+      {properties.type === MEMBER_ROW_TYPE.EDIT && (
+          <TableRow style={{alignItems: 'flex-start'}}>
+            <TableCell>
+              {index + 1}
+            </TableCell>
+            <TableCell>
+              <TextField value={memberData.name} onChange={({target}) => handleChangeMemberData('name', target.value)} />
+            </TableCell>
+            <TableCell>
+              <TextField label={'도시'} value={memberData.addressCity} onChange={({target}) => handleChangeMemberData('addressCity', target.value)} />
+              <TextField label={'상세 주소'} value={memberData.addressStreet} onChange={({target}) => handleChangeMemberData('addressStreet', target.value)} />
+              <TextField label={'우편 번호'} value={memberData.addressZipcode} onChange={({target}) => handleChangeMemberData('addressZipcode', target.value)} />
+            </TableCell>
+            <TableCell>
+              <Button variant={'contained'} color={'primary'} size={'small'} onClick={handleClickUpdateButton}>수정</Button>
+              <Button variant={'contained'} color={'secondary'} size={'small'} onClick={handleClickCancelButton}>취소</Button>
+            </TableCell>
+          </TableRow>
+      )}
+    </React.Fragment>
+  );
+}
+
+const INIT_PRODUCT_ENROLL_PROPERTIES = {
+  itemType: ITEM_TYPE.ALBUM
+};
+
+const ProductEnrollTabPanel = () => {
+  const [ properties, setProperties ] = React.useState(INIT_PRODUCT_ENROLL_PROPERTIES);
+
+  const handleChangeItemType = ({target}) => {
+    const { value } = target;
+
+    setProperties({
+      ...properties,
+
+      itemType : value
+    });
+  };
+
+  return (
+    <Grid container spacing={1} style={{alignItems: 'flex-start'}}>
+      <Grid item xs={12}>
+        <h3>상품 등록</h3>
+      </Grid>
+
+      <Grid item xs={12} style={{marginBottom: '10px'}}>
+        <Grid container spacing={1}>
+          <Grid item xs={2} style={{paddingTop: '10px'}}>
+            상품 타입
+          </Grid>
+          <Grid item xs={8}>
+            <Select value={properties.itemType} onChange={handleChangeItemType}>
+              <MenuItem value={ITEM_TYPE.ALBUM}>
+                앨범
+              </MenuItem>
+              <MenuItem value={ITEM_TYPE.BOOK}>
+                도서
+              </MenuItem>
+              <MenuItem value={ITEM_TYPE.MOVIE}>
+                영화
+              </MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={2}>
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <Grid item xs={12} style={{marginBottom: '10px'}}>
+        <Grid container spacing={1}>
+          <Grid item xs={2} style={{paddingTop: '10px'}}>
+            상품명
+          </Grid>
+          <Grid item xs={8}>
+            <TextField />
+          </Grid>
+          <Grid item xs={2}>
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <Grid item xs={12} style={{marginBottom: '10px'}}>
+        <Grid container spacing={1}>
+          <Grid item xs={2}>
+            가격
+          </Grid>
+          <Grid item xs={8}>
+            <TextField />
+          </Grid>
+          <Grid item xs={2}>
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <Grid item xs={12} style={{marginBottom: '10px'}}>
+        <Grid container spacing={1}>
+          <Grid item xs={2}>
+            재고
+          </Grid>
+          <Grid item xs={8}>
+            <TextField />
+          </Grid>
+          <Grid item xs={2}>
+          </Grid>
+        </Grid>
+      </Grid>
+
+      <Grid item xs={12} style={{marginBottom: '10px'}}>
+        <Grid container spacing={1}>
+          <Grid item xs={2}>
+            카테고리
+          </Grid>
+          <Grid item xs={8}>
+            <Select>
+              <MenuItem>카테고리1</MenuItem>
+            </Select>
+          </Grid>
+          <Grid item xs={2}>
+          </Grid>
+        </Grid>
+      </Grid>
+
+      {properties.itemType === ITEM_TYPE.ALBUM && (
+        <React.Fragment>
+          <Grid item xs={12} style={{marginBottom: '10px'}}>
+            <Grid container spacing={1}>
+              <Grid item xs={2}>
+                작곡가
+              </Grid>
+              <Grid item xs={8}>
+                <TextField />
+              </Grid>
+              <Grid item xs={2}>
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={12} style={{marginBottom: '10px'}}>
+            <Grid container spacing={1}>
+              <Grid item xs={2}>
+                기타
+              </Grid>
+              <Grid item xs={8}>
+                <TextField />
+              </Grid>
+              <Grid item xs={2}>
+              </Grid>
+            </Grid>
+          </Grid>
+        </React.Fragment>
+      )}
+
+      {properties.itemType === ITEM_TYPE.BOOK && (
+        <React.Fragment>
+          <Grid item xs={12} style={{marginBottom: '10px'}}>
+            <Grid container spacing={1}>
+              <Grid item xs={2}>
+                저자
+              </Grid>
+              <Grid item xs={8}>
+                <TextField />
+              </Grid>
+              <Grid item xs={2}>
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={12} style={{marginBottom: '10px'}}>
+            <Grid container spacing={1}>
+              <Grid item xs={2}>
+                isbn
+              </Grid>
+              <Grid item xs={8}>
+                <TextField />
+              </Grid>
+              <Grid item xs={2}>
+              </Grid>
+            </Grid>
+          </Grid>
+        </React.Fragment>
+      )}
+
+      {properties.itemType === ITEM_TYPE.MOVIE && (
+        <React.Fragment>
+          <Grid item xs={12} style={{marginBottom: '10px'}}>
+            <Grid container spacing={1}>
+              <Grid item xs={2}>
+                감독
+              </Grid>
+              <Grid item xs={8}>
+                <TextField />
+              </Grid>
+              <Grid item xs={2}>
+              </Grid>
+            </Grid>
+          </Grid>
+
+          <Grid item xs={12} style={{marginBottom: '10px'}}>
+            <Grid container spacing={1}>
+              <Grid item xs={2}>
+                배우
+              </Grid>
+              <Grid item xs={8}>
+                <TextField />
+              </Grid>
+              <Grid item xs={2}>
+              </Grid>
+            </Grid>
+          </Grid>
+        </React.Fragment>
+      )}
+
+      <Grid item xs={12} style={{display: 'flex', justifyContent: 'flex-end'}}>
+        <Button variant={'contained'} color={'primary'}>
+          등록
+        </Button>
+      </Grid>
+
+    </Grid>
   );
 }
 

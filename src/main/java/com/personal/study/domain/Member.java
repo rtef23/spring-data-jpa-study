@@ -1,6 +1,8 @@
 package com.personal.study.domain;
 
 import com.personal.study.domain.value.Address;
+import com.personal.study.util.Mergeable;
+import com.personal.study.util.annotation.ExcludeMerge;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Column;
@@ -14,10 +16,11 @@ import lombok.Getter;
 
 @Entity
 @Getter
-public class Member {
+public class Member implements Mergeable<Member> {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "member_id")
+  @ExcludeMerge
   private Long id;
 
   private String name;

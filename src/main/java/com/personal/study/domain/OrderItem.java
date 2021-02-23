@@ -1,5 +1,7 @@
 package com.personal.study.domain;
 
+import com.personal.study.util.Mergeable;
+import com.personal.study.util.annotation.ExcludeMerge;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -14,10 +16,11 @@ import lombok.Getter;
 @Entity
 @Table(name = "ORDER_ITEM")
 @Getter
-public class OrderItem {
+public class OrderItem implements Mergeable<OrderItem> {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "order_item_id")
+  @ExcludeMerge
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)

@@ -17,7 +17,15 @@ public class MemberService {
     return memberRepository.findPagedMembers(searchCondition, pageable);
   }
 
-  public void addMembers(Member member) {
-    memberRepository.save(member);
+  public void addMember(Member addValue) {
+    memberRepository.save(addValue);
+  }
+
+  public void modifyMember(Long id, Member updateValue) {
+    memberRepository.modifyMember(id, updateValue);
+  }
+
+  public void removeMember(Long id){
+    memberRepository.removeMember(id);
   }
 }
