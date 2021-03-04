@@ -67,28 +67,26 @@ public class MemberCustomRepositoryImpl implements MemberCustomRepository {
   @Override
   @Transactional
   public Member modifyMember(Long id, Member updateValue) {
-    Member targetMember = findManagedMemberEntity(id);
+    Member foundMember = entityManager.find(Member.class, id);
 
-    targetMember.merge(updateValue);
+    if (Objects.isNull(foundMember)) {
+      throw new ResourceNotExistException("member not founded. id : " + id);
+    }
 
-    return targetMember;
+    foundMember.merge(updateValue);
+
+    return foundMember;
   }
 
   @Override
   @Transactional
   public void removeMember(Long id) {
-    Member targetMember = findManagedMemberEntity(id);
-
-    entityManager.remove(targetMember);
-  }
-
-  private Member findManagedMemberEntity(Long id) {
     Member foundMember = entityManager.find(Member.class, id);
 
     if (Objects.isNull(foundMember)) {
-      throw new ResourceNotExistException("member not founded.");
+      throw new ResourceNotExistException("member not founded. id : " + id);
     }
 
-    return foundMember;
+    entityManager.remove(foundMember);
   }
 }

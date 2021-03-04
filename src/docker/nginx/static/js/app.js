@@ -79,6 +79,56 @@ const MemberApi = {
   }
 };
 
+const ItemApi = {
+  getItems: (searchCondition) => {
+    return _axios.get('/api/v1/items', {
+      params: {
+        ...searchCondition,
+      }
+    });
+  },
+
+  addBook: (book) => {
+    return _axios.post('/api/v1/items/books', {
+      ...book
+    })
+  },
+
+  addAlbum: (album) => {
+    return _axios.post('/api/v1/items/albums', {
+      ...album
+    })
+  },
+
+  addMovie: (movie) => {
+    return _axios.post('/api/v1/items/movies', {
+      ...movie
+    })
+  },
+
+  updateBook: (id, updateValue) => {
+    return _axios.put(`/api/v1/items/books/${id}`, {
+      ...updateValue
+    });
+  },
+
+  updateAlbum: (id, updateValue) => {
+    return _axios.put(`/api/v1/items/albums/${id}`, {
+      ...updateValue
+    });
+  },
+
+  updateMovie: (id, updateValue) => {
+    return _axios.put(`/api/v1/items/movies/${id}`, {
+      ...updateValue
+    });
+  },
+
+  removeItem: (id) => {
+    return _axios.delete(`/api/v1/items/${id}`);
+  }
+};
+
 //======== custom Hooks
 const TabContext = React.createContext({
   currentTab : '',
@@ -137,6 +187,7 @@ const MEMBER_SEARCH_TYPE = {
 const INIT_MEMBER_SEARCH_CONDITION = {
   keywordType: MEMBER_SEARCH_TYPE.NAME,
   keyword: undefined,
+
   page: 1,
   size: 10
 };
@@ -193,6 +244,94 @@ const MemberListProvider = ({children}) => {
   );
 };
 
+const INIT_ITEM_SEARCH_CONDITION = {
+  itemType: undefined,
+  name: undefined,
+
+  page: 1,
+  size: 10
+};
+
+const ItemListContext = React.createContext();
+
+const ItemListProvider = ({children}) => {
+  const [ searchCondition, changeSearchCondition ] = React.useState(INIT_ITEM_SEARCH_CONDITION);
+  const [ items, setItems ] = React.useState([]);
+
+  React.useEffect(() => {
+    ItemApi
+      .getItems(searchCondition)
+      .then((apiResponse) => {
+        const { data } = apiResponse;
+        const { content } = data;
+
+        setItems(content);
+      });
+  }, [searchCondition]);
+
+  const modifyBook = (id, updateValue) => {
+    return ItemApi
+      .modifyBook(id, updateValue)
+      .then(() => ItemApi.getItems(searchCondition))
+      .then((apiResponse) => {
+        const { data } = apiResponse;
+        const { content } = data;
+
+        setItems(content);
+      });
+  };
+
+  const modifyAlbum = (id, updateValue) => {
+    return ItemApi
+      .modifyAlbum(id, updateValue)
+      .then(() => ItemApi.getItems(searchCondition))
+      .then((apiResponse) => {
+        const { data } = apiResponse;
+        const { content } = data;
+
+        setItems(content);
+      });
+  };
+
+  const modifyMovie = (id, updateValue) => {
+    return ItemApi
+      .modifyMovie(id, updateValue)
+      .then(() => ItemApi.getItems(searchCondition))
+      .then((apiResponse) => {
+        const { data } = apiResponse;
+        const { content } = data;
+
+        setItems(content);
+      });
+  };
+
+  const removeItem = (id) => {
+    return ItemApi
+      .removeItem(id)
+      .then(() => ItemApi.getItems(searchCondition))
+      .then((apiResponse) => {
+        const { data } = apiResponse;
+        const { content } = data;
+
+        setItems(content);
+      });
+  };
+
+  const actions = {
+    changeSearchCondition,
+    modifyBook,
+    modifyAlbum,
+    modifyMovie,
+    removeItem
+  };
+
+  return (
+    <ItemListContext.Provider value={{searchCondition, items, actions }}>
+      {children}
+    </ItemListContext.Provider>
+  );
+};
+
 //======== util react components
 const CustomTabPanel = ({ children, id, value, ...other}) => {
   return (
@@ -208,7 +347,7 @@ const CustomTabPanel = ({ children, id, value, ...other}) => {
              style={{width: '100%'}}
              {...other}>
           {isSelected && (
-            <Box p={3} style={{paddingTop: '0px'}}>
+            <Box p={3} style={{paddingTop: '0px', width: '900px'}}>
               {children}
             </Box>
           )}
@@ -252,45 +391,45 @@ const MemberJoinTabPanel = () => {
 
   return (
     <Grid container spacing={1} style={{alignItems: 'flex-start'}}>
-      <Grid item xs={12}>
+      <Grid item sm={12}>
         <h3>회원 가입</h3>
       </Grid>
 
-      <Grid item xs={12} style={{marginBottom: '10px'}}>
+      <Grid item sm={12} style={{marginBottom: '10px'}}>
         <Grid container spacing={1}>
-          <Grid item xs={2} style={{paddingTop: '10px'}}>
+          <Grid item sm={2} style={{paddingTop: '10px'}}>
             이름
           </Grid>
-          <Grid item xs={10} style={{alignItems: 'flex-start'}}>
+          <Grid item sm={10} style={{alignItems: 'flex-start'}}>
             <TextField inputRef={nameRef} />
           </Grid>
         </Grid>
       </Grid>
 
-      <Grid item xs={12} style={{marginBottom: '10px'}}>
+      <Grid item sm={12} style={{marginBottom: '10px'}}>
         <Grid container spacing={1}>
-          <Grid item xs={2} style={{paddingTop: '10px'}}>
+          <Grid item sm={2} style={{paddingTop: '10px'}}>
             주소
           </Grid>
-          <Grid item xs={8} style={{alignItems: 'flex-start'}}>
+          <Grid item sm={8} style={{alignItems: 'flex-start'}}>
             <Grid container spacing={1}>
-              <Grid item xs={4}>
+              <Grid item sm={4}>
                 <TextField label={"도시"} inputRef={cityRef} />
               </Grid>
-              <Grid item xs={6}>
+              <Grid item sm={6}>
                 <TextField label={"상세 주소"} inputRef={streetRef} fullWidth />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid item sm={12}>
                 <TextField label={"우편 번호"} inputRef={zipcodeRef} />
               </Grid>
             </Grid>
           </Grid>
-          <Grid item xs={2}></Grid>
+          <Grid item sm={2}></Grid>
         </Grid>
       </Grid>
 
-      <Grid item xs={12} style={{display: 'flex', justifyContent: 'flex-end'}}>
+      <Grid item sm={12} style={{display: 'flex', justifyContent: 'flex-end'}}>
         <Button variant={'contained'} color={'secondary'} style={{marginRight: '5px'}} onClick={handleClickInitializeButton}>
           초기화
         </Button>
@@ -306,11 +445,11 @@ const MemberListTabPanel = () => {
   return (
     <MemberListProvider>
       <Grid container spacing={1} style={{alignItems: 'flex-start'}}>
-        <Grid item xs={12}>
+        <Grid item sm={12}>
           <h3>회원 목록</h3>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid item sm={12}>
           <TableContainer component={Paper}>
             <Table style={{minWidth: '700px'}}>
               <MemberListContext.Consumer>
@@ -512,11 +651,34 @@ const MemberRow = ({ member, index, onChangeMember, onRemoveMember }) => {
   );
 }
 
+const INIT_ALBUM_VALUES = {
+  artist: '',
+  etc: ''
+};
+
+const INIT_BOOK_VALUES = {
+  author: '',
+  isbn: ''
+};
+
+const INIT_MOVIE_VALUES = {
+  director: '',
+  actor: ''
+};
+
 const INIT_PRODUCT_ENROLL_PROPERTIES = {
-  itemType: ITEM_TYPE.ALBUM
+  itemType: ITEM_TYPE.ALBUM,
+
+  typeValues: {
+    ...INIT_ALBUM_VALUES
+  }
 };
 
 const ProductEnrollTabPanel = () => {
+  const nameRef = React.createRef();
+  const priceRef = React.createRef();
+  const stockQuantityRef = React.createRef();
+
   const [ properties, setProperties ] = React.useState(INIT_PRODUCT_ENROLL_PROPERTIES);
 
   const handleChangeItemType = ({target}) => {
@@ -525,200 +687,419 @@ const ProductEnrollTabPanel = () => {
     setProperties({
       ...properties,
 
-      itemType : value
+      itemType : value,
+
+      typeValues: value === ITEM_TYPE.ALBUM ? INIT_ALBUM_VALUES : value === ITEM_TYPE.BOOK ? INIT_BOOK_VALUES : INIT_MOVIE_VALUES
     });
   };
 
+  const handleChangeTypeValues = (typeValues) => {
+    setProperties({
+      ...properties,
+
+      typeValues
+    });
+  };
+
+  const handleClickEnrollButton = () => {
+    const { itemType, typeValues } = properties;
+
+    switch(itemType){
+      case ITEM_TYPE.ALBUM:
+        ItemApi.addAlbum({
+          name: nameRef.current.value,
+          price: priceRef.current.value,
+          stockQuantity: stockQuantityRef.current.value,
+
+          ...typeValues
+        });
+      break;
+
+      case ITEM_TYPE.BOOK:
+        ItemApi.addBook({
+          name: nameRef.current.value,
+          price: priceRef.current.value,
+          stockQuantity: stockQuantityRef.current.value,
+
+          ...typeValues
+        });
+      break;
+
+      case ITEM_TYPE.MOVIE:
+        ItemApi.addMovie({
+          name: nameRef.current.value,
+          price: priceRef.current.value,
+          stockQuantity: stockQuantityRef.current.value,
+
+          ...typeValues
+        });
+      break;
+
+      default:
+    }
+  };
+
   return (
-    <Grid container spacing={1} style={{alignItems: 'flex-start'}}>
-      <Grid item xs={12}>
+    <Grid container spacing={1} alignItems={'flex-start'}>
+      <Grid item sm={12}>
         <h3>상품 등록</h3>
       </Grid>
 
-      <Grid item xs={12} style={{marginBottom: '10px'}}>
-        <Grid container spacing={1}>
-          <Grid item xs={2} style={{paddingTop: '10px'}}>
-            상품 타입
-          </Grid>
-          <Grid item xs={8}>
-            <Select value={properties.itemType} onChange={handleChangeItemType}>
-              <MenuItem value={ITEM_TYPE.ALBUM}>
-                앨범
-              </MenuItem>
-              <MenuItem value={ITEM_TYPE.BOOK}>
-                도서
-              </MenuItem>
-              <MenuItem value={ITEM_TYPE.MOVIE}>
-                영화
-              </MenuItem>
-            </Select>
-          </Grid>
-          <Grid item xs={2}>
-          </Grid>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2} style={{paddingTop: '10px'}}>
+          상품 타입
+        </Grid>
+        <Grid item sm={10}>
+          <Select value={properties.itemType} onChange={handleChangeItemType}>
+            <MenuItem value={ITEM_TYPE.ALBUM}>
+              앨범
+            </MenuItem>
+            <MenuItem value={ITEM_TYPE.BOOK}>
+              도서
+            </MenuItem>
+            <MenuItem value={ITEM_TYPE.MOVIE}>
+              영화
+            </MenuItem>
+          </Select>
         </Grid>
       </Grid>
 
-      <Grid item xs={12} style={{marginBottom: '10px'}}>
-        <Grid container spacing={1}>
-          <Grid item xs={2} style={{paddingTop: '10px'}}>
-            상품명
-          </Grid>
-          <Grid item xs={8}>
-            <TextField />
-          </Grid>
-          <Grid item xs={2}>
-          </Grid>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2} style={{paddingTop: '10px'}}>
+          상품명
+        </Grid>
+        <Grid item sm={10}>
+          <TextField inputRef={nameRef} />
         </Grid>
       </Grid>
 
-      <Grid item xs={12} style={{marginBottom: '10px'}}>
-        <Grid container spacing={1}>
-          <Grid item xs={2}>
-            가격
-          </Grid>
-          <Grid item xs={8}>
-            <TextField />
-          </Grid>
-          <Grid item xs={2}>
-          </Grid>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          가격
+        </Grid>
+        <Grid item sm={10}>
+          <TextField inputRef={priceRef} />
         </Grid>
       </Grid>
 
-      <Grid item xs={12} style={{marginBottom: '10px'}}>
-        <Grid container spacing={1}>
-          <Grid item xs={2}>
-            재고
-          </Grid>
-          <Grid item xs={8}>
-            <TextField />
-          </Grid>
-          <Grid item xs={2}>
-          </Grid>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          재고
+        </Grid>
+        <Grid item sm={10}>
+          <TextField inputRef={stockQuantityRef} />
         </Grid>
       </Grid>
 
-      <Grid item xs={12} style={{marginBottom: '10px'}}>
-        <Grid container spacing={1}>
-          <Grid item xs={2}>
-            카테고리
-          </Grid>
-          <Grid item xs={8}>
-            <Select>
-              <MenuItem>카테고리1</MenuItem>
-            </Select>
-          </Grid>
-          <Grid item xs={2}>
-          </Grid>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          카테고리
+        </Grid>
+        <Grid item sm={10}>
+          <Select>
+            <MenuItem>카테고리1</MenuItem>
+          </Select>
         </Grid>
       </Grid>
 
       {properties.itemType === ITEM_TYPE.ALBUM && (
-        <React.Fragment>
-          <Grid item xs={12} style={{marginBottom: '10px'}}>
-            <Grid container spacing={1}>
-              <Grid item xs={2}>
-                작곡가
-              </Grid>
-              <Grid item xs={8}>
-                <TextField />
-              </Grid>
-              <Grid item xs={2}>
-              </Grid>
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12} style={{marginBottom: '10px'}}>
-            <Grid container spacing={1}>
-              <Grid item xs={2}>
-                기타
-              </Grid>
-              <Grid item xs={8}>
-                <TextField />
-              </Grid>
-              <Grid item xs={2}>
-              </Grid>
-            </Grid>
-          </Grid>
-        </React.Fragment>
+        <AlbumProduct typeValues={properties.typeValues} onChange={handleChangeTypeValues} />
       )}
 
       {properties.itemType === ITEM_TYPE.BOOK && (
-        <React.Fragment>
-          <Grid item xs={12} style={{marginBottom: '10px'}}>
-            <Grid container spacing={1}>
-              <Grid item xs={2}>
-                저자
-              </Grid>
-              <Grid item xs={8}>
-                <TextField />
-              </Grid>
-              <Grid item xs={2}>
-              </Grid>
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12} style={{marginBottom: '10px'}}>
-            <Grid container spacing={1}>
-              <Grid item xs={2}>
-                isbn
-              </Grid>
-              <Grid item xs={8}>
-                <TextField />
-              </Grid>
-              <Grid item xs={2}>
-              </Grid>
-            </Grid>
-          </Grid>
-        </React.Fragment>
+        <BookProduct typeValues={properties.typeValues} onChange={handleChangeTypeValues} />
       )}
 
       {properties.itemType === ITEM_TYPE.MOVIE && (
-        <React.Fragment>
-          <Grid item xs={12} style={{marginBottom: '10px'}}>
-            <Grid container spacing={1}>
-              <Grid item xs={2}>
-                감독
-              </Grid>
-              <Grid item xs={8}>
-                <TextField />
-              </Grid>
-              <Grid item xs={2}>
-              </Grid>
-            </Grid>
-          </Grid>
-
-          <Grid item xs={12} style={{marginBottom: '10px'}}>
-            <Grid container spacing={1}>
-              <Grid item xs={2}>
-                배우
-              </Grid>
-              <Grid item xs={8}>
-                <TextField />
-              </Grid>
-              <Grid item xs={2}>
-              </Grid>
-            </Grid>
-          </Grid>
-        </React.Fragment>
+        <MovieProduct typeValues={properties.typeValues} onChange={handleChangeTypeValues} />
       )}
 
-      <Grid item xs={12} style={{display: 'flex', justifyContent: 'flex-end'}}>
-        <Button variant={'contained'} color={'primary'}>
-          등록
-        </Button>
+      <Grid item container sm={12} style={{justifyContent: 'flex-end'}}>
+        <Grid item sm={12}>
+          <Button variant={'contained'} color={'primary'} onClick={handleClickEnrollButton}>
+            등록
+          </Button>
+        </Grid>
       </Grid>
 
     </Grid>
   );
-}
+};
+
+const AlbumProduct = ({typeValues, onChange}) => {
+  const { artist, etc } = typeValues;
+
+  const handleChangeArtist = (value) => {
+    onChange({
+      ...typeValues,
+
+      artist: value
+    });
+  }
+
+  const handleChangeEtc = (value) => {
+    onChange({
+      ...typeValues,
+
+      etc: value
+    });
+  };
+
+  return (
+    <React.Fragment>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          작곡가
+        </Grid>
+        <Grid item sm={10}>
+          <TextField value={artist} onChange={({target}) => handleChangeArtist(target.value)} />
+        </Grid>
+      </Grid>
+
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          기타
+        </Grid>
+        <Grid item sm={10}>
+          <TextField value={etc} onChange={({target}) => handleChangeEtc(target.value)} />
+        </Grid>
+      </Grid>
+    </React.Fragment>
+  );
+};
+
+const BookProduct = ({typeValues, onChange}) => {
+  const {author, isbn} = typeValues;
+
+  const handleChangeAuthor = (value) => {
+    onChange({
+      ...typeValues,
+
+      author: value
+    });
+  };
+
+  const handleChangeIsbn = (value) => {
+    onChange({
+      ...typeValues,
+
+      isbn: value
+    });
+  };
+
+  return (
+    <React.Fragment>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          저자
+        </Grid>
+        <Grid item sm={10}>
+          <TextField value={author} onChange={({target}) => handleChangeAuthor(target.value)} />
+        </Grid>
+      </Grid>
+
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          isbn
+        </Grid>
+        <Grid item sm={10}>
+          <TextField value={isbn} onChange={({target}) => handleChangeIsbn(target.value)} />
+        </Grid>
+      </Grid>
+    </React.Fragment>
+  );
+};
+
+const MovieProduct = ({typeValues, onChange}) => {
+  const {director, actor} = typeValues;
+
+  const handleChangeDirector = (value) => {
+    onChange({
+      ...typeValues,
+
+      director: value
+    });
+  };
+
+  const handleChangeActor = (value) => {
+    onChange({
+      ...typeValues,
+
+      actor: value
+    });
+  };
+
+  return (
+    <React.Fragment>
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          감독
+        </Grid>
+        <Grid item sm={10}>
+          <TextField value={director} onChange={({target}) => handleChangeDirector(target.value)} />
+        </Grid>
+      </Grid>
+
+      <Grid item container sm={12} style={{marginBottom: '10px'}}>
+        <Grid item sm={2}>
+          배우
+        </Grid>
+        <Grid item sm={10}>
+          <TextField value={actor} onChange={({target}) => handleChangeActor(target.value)} />
+        </Grid>
+      </Grid>
+    </React.Fragment>
+  );
+};
 
 const ProductListTabPanel = () => {
   return (
-    <div>
-      this is ProductListTabPanel
-    </div>
+    <ItemListProvider>
+      <Grid container spacing={1} style={{alignItems: 'flex-start'}}>
+        <Grid item sm={12}>
+          <h3>상품 목록</h3>
+        </Grid>
+
+        <Grid item sm={12}>
+          <TableContainer component={Paper}>
+            <Table style={{minWidth: '700px'}}>
+              <ItemListContext.Consumer>
+                {({searchCondition, actions}) => (
+                  <ProductListTableHead searchCondition={searchCondition} onChangeSearchCondition={actions.changeSearchCondition} />
+                )}
+              </ItemListContext.Consumer>
+
+              <ProductListTableBody />
+            </Table>
+          </TableContainer>
+        </Grid>
+      </Grid>
+    </ItemListProvider>
   );
-}
+};
+
+const ALL = 'ALL';
+
+const ProductListTableHead = ({searchCondition, onChangeSearchCondition}) => {
+  const nameRef = React.createRef();
+
+  const [ properties, setProperties] = React.useState({
+    itemType: searchCondition.itemType || ALL
+  });
+
+  const handleChangeItemType = (event) => {
+    const { target } = event;
+    const { value } = target;
+
+    setProperties({
+      ...properties,
+
+      itemType: value
+    });
+  };
+
+  const handleClickSearchButton = () => {
+    const { itemType } = properties;
+
+    onChangeSearchCondition({
+      ...INIT_ITEM_SEARCH_CONDITION,
+
+      itemType: itemType === ALL ? undefined : itemType,
+      name: nameRef.current.value
+    });
+  };
+
+  return (
+    <TableHead>
+      <TableRow>
+        <TableCell colSpan={7}>
+          <div style={{alignItems: 'flex-end', justifyContent: 'flex-end'}}>
+            <Select value={properties.itemType} onChange={handleChangeItemType}>
+              <MenuItem value={ALL}>전체</MenuItem>
+              <MenuItem value={ITEM_TYPE.ALBUM}>앨범</MenuItem>
+              <MenuItem value={ITEM_TYPE.MOVIE}>영화</MenuItem>
+              <MenuItem value={ITEM_TYPE.BOOK}>책</MenuItem>
+            </Select>
+
+            <TextField inputRef={nameRef} />
+
+            <Button variant={'contained'} color={'primary'} size={'small'} onClick={handleClickSearchButton}>검색</Button>
+          </div>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>No.</TableCell>
+        <TableCell>이름</TableCell>
+        <TableCell>가격</TableCell>
+        <TableCell>재고</TableCell>
+        <TableCell>타입값1</TableCell>
+        <TableCell>타입값2</TableCell>
+        <TableCell />
+      </TableRow>
+    </TableHead>
+  );
+};
+
+const ProductListTableBody = () => {
+  return (
+    <ItemListContext.Consumer>
+      {({items, actions, searchCondition}) => (
+        <TableBody>
+          {!items.length && (
+            <TableRow></TableRow>
+          )}
+          {items.map((item, index) => (
+            <ProductRow
+             key={index}
+             index={index}
+             item={item}
+             onChangeItem={item.itemType === ITEM_TYPE.ALBUM ? actions.modifyAlbum : item.itemType === ITEM_TYPE.BOOK ? actions.modifyBook : actions.modifyMovie}
+             onRemoveItem={actions.removeItem} />
+          ))}
+        </TableBody>
+      )}
+    </ItemListContext.Consumer>
+  );
+};
+
+const ProductRow = ({index, item, onChangeItem, onRemoveItem}) => {
+  const { itemType, name, price, stockQuantity, artist, etc, author, isbn, director, actor } = item;
+
+  return (
+    <TableRow>
+      <TableCell>{index + 1}</TableCell>
+      <TableCell>{name}</TableCell>
+      <TableCell>{price}</TableCell>
+      <TableCell>{stockQuantity}</TableCell>
+
+      {itemType === ITEM_TYPE.ALBUM && (
+        <React.Fragment>
+          <TableCell>{artist}</TableCell>
+          <TableCell>{etc}</TableCell>
+        </React.Fragment>
+      )}
+
+      {itemType === ITEM_TYPE.BOOK && (
+        <React.Fragment>
+          <TableCell>{author}</TableCell>
+          <TableCell>{isbn}</TableCell>
+        </React.Fragment>
+      )}
+
+      {itemType === ITEM_TYPE.MOVIE && (
+        <React.Fragment>
+          <TableCell>{director}</TableCell>
+          <TableCell>{actor}</TableCell>
+        </React.Fragment>
+      )}
+
+      <TableCell>
+        <Button variant={'contained'} color={'primary'} size={'small'}>수정</Button>
+        <Button variant={'contained'} color={'secondary'} size={'small'}>삭제</Button>
+      </TableCell>
+    </TableRow>
+  );
+};
 
 const ProductOrderTabPanel = () => {
   return (
@@ -742,21 +1123,23 @@ const Content = () => {
   return (
     <TabContext.Provider value={{ currentTab, changeCurrentTab }}>
       <SnackbarProvider>
-        <div style={{display: 'flex', flexGrow: 1}}>
-          <Tabs
-            orientation="vertical"
-            variant="scrollable"
-            style={{display: 'flex', borderRight : 'solid 1px black'}}
-            value={currentTab}
-            onChange={(event, value) => changeCurrentTab(value)}>
-            {Object.keys(TABS).map((tabKey, index) => {
-              const { value } = TABS[tabKey];
+        <Grid container spacing={1}>
+          <Grid item sm={2}>
+            <Tabs
+              orientation="vertical"
+              variant="scrollable"
+              style={{display: 'flex', borderRight : 'solid 1px black'}}
+              value={currentTab}
+              onChange={(event, value) => changeCurrentTab(value)}>
+              {Object.keys(TABS).map((tabKey, index) => {
+                const { value } = TABS[tabKey];
 
-              return (<Tab key={index} id={`vertical-tab-${value}`} aria-controls={`vertical-tabpanel-${value}`} {...TABS[tabKey]} />);
-            })}
-          </Tabs>
+                return (<Tab key={index} id={`vertical-tab-${value}`} aria-controls={`vertical-tabpanel-${value}`} {...TABS[tabKey]} />);
+              })}
+            </Tabs>
+          </Grid>
 
-          <div style={{display: 'flex', flexGrow: 4}}>
+          <Grid item sm={10}>
             <CustomTabPanel value={TABS.HOME.value}>
               <HomeTabPanel />
             </CustomTabPanel>
@@ -784,8 +1167,8 @@ const Content = () => {
             <CustomTabPanel value={TABS.ORDER_LIST.value}>
               <OrderListTabPanel />
             </CustomTabPanel>
-          </div>
-        </div>
+          </Grid>
+        </Grid>
       </SnackbarProvider>
     </TabContext.Provider>
   );
